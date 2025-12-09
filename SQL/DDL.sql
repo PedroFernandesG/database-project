@@ -122,3 +122,32 @@ CREATE TABLE Participa (
      FOREIGN KEY (CNPJ_Organizacao,Equipe_Disc) REFERENCES Equipe(CNPJ, Equipe_Disc)
 
 );   
+
+CREATE OR REPLACE TRIGGER trg_before_insert_jogador
+BEFORE INSERT ON Jogador
+FOR EACH ROW
+DECLARE
+    v_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_count FROM Staff WHERE CPF = :NEW.CPF;
+    
+    IF v_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Erro: O CPF ' || :NEW.CPF || ' já está registrado como Staff.');
+    END IF;
+END;
+/
+
+CREATE OR REPLACE TRIGGER trg_before_insert_staff
+BEFORE INSERT ON Staff
+FOR EACH ROW
+DECLARE
+    v_count NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO v_count FROM Jogador WHERE CPF = :NEW.CPF;
+    
+    IF v_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, 'Erro: O CPF ' || :NEW.CPF || ' já está registrado como Jogador.');
+    END IF;
+END;
+/
+
